@@ -2,6 +2,7 @@
   "use strict";
 
   var WHATSAPP_NUMBER = "9647763003003";
+  var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function buildWhatsAppLink(message) {
     return "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
@@ -113,5 +114,48 @@
       }
     }
     requestAnimationFrame(step);
+  }
+
+  // ===== Scroll progress bar =====
+  var progressBar = document.getElementById("scrollProgress");
+  if (progressBar) {
+    var updateProgress = function () {
+      var scrollTop = window.scrollY;
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      progressBar.style.width = pct + "%";
+    };
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    updateProgress();
+  }
+
+  // ===== Magnetic buttons =====
+  if (!prefersReducedMotion && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    document.querySelectorAll(".magnetic").forEach(function (btn) {
+      btn.addEventListener("mousemove", function (e) {
+        var rect = btn.getBoundingClientRect();
+        var x = e.clientX - rect.left - rect.width / 2;
+        var y = e.clientY - rect.top - rect.height / 2;
+        btn.style.transform = "translate(" + (x * 0.18) + "px, " + (y * 0.35) + "px)";
+      });
+      btn.addEventListener("mouseleave", function () {
+        btn.style.transform = "";
+      });
+    });
+
+    // ===== Tilt cards =====
+    document.querySelectorAll(".tilt").forEach(function (card) {
+      card.addEventListener("mousemove", function (e) {
+        var rect = card.getBoundingClientRect();
+        var x = (e.clientX - rect.left) / rect.width - 0.5;
+        var y = (e.clientY - rect.top) / rect.height - 0.5;
+        var rotateX = (-y * 6).toFixed(2);
+        var rotateY = (x * 6).toFixed(2);
+        card.style.transform = "perspective(700px) rotateX(" + rotateX + "deg) rotateY(" + rotateY + "deg) translateY(-4px)";
+      });
+      card.addEventListener("mouseleave", function () {
+        card.style.transform = "";
+      });
+    });
   }
 })();
